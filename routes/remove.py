@@ -19,7 +19,7 @@ class RemoveCommand(BaseCommand):
 
         mat = self.re.match(msg)
         if not mat:
-            return "格式：/delete 1 （删除自己）或 /delete 1 at某人 （删除某人）"
+            return "格式：/remove [id] （删除自己）或 /remove [id] at某人 （删除某人，仅限发起者）"
 
         pot_id = int(mat.group(1))
         remove_id = int(mat.group(2)) if mat.group(2) else None
