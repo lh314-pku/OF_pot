@@ -1,0 +1,42 @@
+# ========== Python ==========
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# ========== uv / virtual env ==========
+.venv/
+venv/
+.env/
+
+# uv cache（可选，但推荐）
+.uv-cache/
+
+# ========== testing ==========
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# ========== IDE ==========
+.vscode/
+.idea/
+
+# ========== OS ==========
+.DS_Store
+Thumbs.db
+
+# ========== logs ==========
+*.log
+
+# ========== SQLite databases ==========
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
