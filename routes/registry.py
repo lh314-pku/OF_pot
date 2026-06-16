@@ -1,7 +1,7 @@
 from routes.base import CommandRegistry
 from models import CTX
 
-async def dispatch_command(name: str, ctx: dict):
+async def dispatch_command(name: str, ctx: CTX):
     cmd = CommandRegistry.commands.get(name)
 
     if not cmd:
@@ -16,4 +16,4 @@ def get_help_text():
     for cmd in CommandRegistry.commands.values():
         lines.append(f"{cmd.pattern or cmd.name} : {cmd.help}")
 
-    return "\n".join(lines)
+    return "\n\n".join(lines)

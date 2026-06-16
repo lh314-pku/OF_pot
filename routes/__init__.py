@@ -2,8 +2,12 @@
 
 
 from routes import delete  # noqa
+from routes import detail  # noqa
+from routes import edit  # noqa
 from routes import help  # noqa
 from routes import join  # noqa
 from routes import newpot  # noqa
 from routes import pots  # noqa
 from routes import remove  # noqa
+from routes import settime  # noqa
+from routes import transfer  # noqa

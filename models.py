@@ -1,5 +1,7 @@
 import datetime
-from sqlalchemy import Column, Integer, String, JSON, DateTime
+from typing import Any
+from sqlalchemy import Integer, String, JSON, DateTime
+from sqlalchemy.orm import Mapped, mapped_column
 from db import Base
 
 UTC_Plus_8 = datetime.timezone(datetime.timedelta(hours=8))
@@ -24,24 +26,36 @@ def auto_get_expire_time(now=None):
     return expire_time
 
 
+def format_time_smart(dt: datetime.datetime, now: datetime.datetime | None = None) -> str:
+    """智能格式化时间：同天省略日期，同年省略年。"""
+    if now is None:
+        now = now_plus_8()
+
+    if dt.year == now.year:
+        if dt.month == now.month and dt.day == now.day:
+            return dt.strftime("%H:%M")
+        return dt.strftime("%m-%d %H:%M")
+    return dt.strftime("%Y-%m-%d %H:%M")
+
+
 class PotDB(Base):
     __tablename__ = "pots"
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    creator = Column(JSON, nullable=False)
-    detail = Column(String, nullable=False)
-    members = Column(JSON, nullable=False, default=list)
-    
-    start_time = Column(
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    creator: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+    detail: Mapped[str] = mapped_column(String, nullable=False)
+    members: Mapped[list[dict[str, Any]]] = mapped_column(JSON, nullable=False, default=list)
+
+    start_time: Mapped[datetime.datetime] = mapped_column(
         DateTime(timezone=True),
         nullable=False,
-        default=now_plus_8
+        default=now_plus_8,
     )
-    
-    expire_time = Column(
+
+    expire_time: Mapped[datetime.datetime] = mapped_column(
         DateTime(timezone=True),
         nullable=False,
-        default=auto_get_expire_time
+        default=auto_get_expire_time,
     )
 
 @dataclass

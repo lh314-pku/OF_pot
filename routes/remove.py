@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from routes.base import BaseCommand, CommandRegistry
 from db import engine
-from models import PotDB, CTX
+from models import PotDB, CTX, now_plus_8
 
 import re
 
@@ -11,12 +11,14 @@ class RemoveCommand(BaseCommand):
     name = "/remove"
     pattern = "/remove [id] (at某人)"
     help = "从锅中删除自己（发起者可删除任意人）"
+    detail = "退出锅 / 移除成员。发起人离开时自动转让给下一位，锅空时自动删除。"
     re = re.compile(r"^/remove\s+(\d+)(?:\s*\[CQ:at,qq=(\d+)\])?$")
 
     async def handle(self, ctx: CTX):
         msg = ctx.msg
         member = ctx.member
 
+        assert self.re is not None
         mat = self.re.match(msg)
         if not mat:
             return "格式：/remove [id] （删除自己）或 /remove [id] at某人 （删除某人，仅限发起者）"
@@ -25,7 +27,7 @@ class RemoveCommand(BaseCommand):
         remove_id = int(mat.group(2)) if mat.group(2) else None
 
         with Session(engine) as session:
-            target = session.get(PotDB, pot_id)
+            target = session.query(PotDB).filter(PotDB.id == pot_id, PotDB.expire_time > now_plus_8()).first()
 
             if not target:
                 return "锅不存在"

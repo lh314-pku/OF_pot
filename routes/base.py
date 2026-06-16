@@ -1,4 +1,4 @@
-from typing import Callable, Dict, Type
+from typing import Callable, Dict, Optional, Type
 
 from models import CTX
 
@@ -16,8 +16,9 @@ class CommandRegistry:
 class BaseCommand:
     name: str = ""
     help: str = ""
-    pattern: str | None = None
-    re: Pattern = None
+    detail: Optional[str] = None
+    pattern: Optional[str] = None
+    re: Optional[Pattern] = None
 
     async def handle(self, ctx: CTX):
         raise NotImplementedError
