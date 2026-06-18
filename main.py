@@ -5,7 +5,8 @@ import json
 from routes.registry import dispatch_command
 import routes  # 触发注册
 
-from models import CTX, Member
+from models import CTX, Member, sync_member_nickname
+from api import try_resolve_response
 
 from sql import init_db
 
@@ -36,6 +37,10 @@ async def ws_endpoint(ws: WebSocket):
         while True:
             event = json.loads(await ws.receive_text())
 
+            # API 响应 → 交给等待中的 call_api 处理
+            if try_resolve_response(event):
+                continue
+
             if event.get("post_type") != "message":
                 continue
 
@@ -52,6 +57,7 @@ async def ws_endpoint(ws: WebSocket):
             user_id = event["sender"].get("user_id")
             
             member = Member(user_id=user_id, nickname=nickname)
+            sync_member_nickname(user_id, nickname)  # lazy 同步昵称
             
             ctx = {
                 "msg": msg,

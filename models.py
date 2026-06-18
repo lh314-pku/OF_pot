@@ -67,6 +67,42 @@ class Member:
     def to_dict(self):
         return {"user_id": self.user_id, "nickname": self.nickname}
 
+def sync_member_nickname(user_id: int, new_nickname: str) -> None:
+    """Lazy 更新：用户发消息时，同步其在所有未过期锅中的昵称。"""
+    from db import engine
+    from sqlalchemy.orm import Session
+
+    with Session(engine) as session:
+        pots = (
+            session.query(PotDB)
+            .filter(PotDB.expire_time > now_plus_8())
+            .all()
+        )
+
+        for pot in pots:
+            dirty = False
+
+            # 更新 creator
+            if pot.creator.get("user_id") == user_id and pot.creator.get("nickname") != new_nickname:
+                pot.creator = {**pot.creator, "nickname": new_nickname}
+                dirty = True
+
+            # 更新 members
+            new_members = []
+            for m in pot.members:
+                if m.get("user_id") == user_id and m.get("nickname") != new_nickname:
+                    new_members.append({**m, "nickname": new_nickname})
+                    dirty = True
+                else:
+                    new_members.append(m)
+
+            if dirty:
+                pot.members = new_members
+                session.add(pot)
+
+        session.commit()
+
+
 @dataclass
 class CTX:
     msg: str
