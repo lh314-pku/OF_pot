@@ -35,17 +35,23 @@ class RemoveCommand(BaseCommand):
             if remove_id is None or remove_id == member.user_id:
                 # 删除自己
                 target.members = [m for m in target.members if m["user_id"] != member.user_id]
-                
+
                 # 特殊判断，发起人离开后随机指定一个新发起人
                 # 注意：如果锅里没人了，直接删除锅
+                transferred = False
                 if not target.members:
                     session.delete(target)
+                    session.commit()
+                    return f"已从 {pot_id} 离开，锅已删除（无剩余成员）"
                 elif target.creator["user_id"] == member.user_id:
                     target.creator = target.members[0]
+                    transferred = True
                     session.add(target)
-                    
+
                 session.commit()
-                return f"已从 {pot_id} 离开" + (f"，新发起人是 {target.creator['nickname']}" if target.members and target.creator["user_id"] != member.user_id else "")
+                members_str = "、".join(m["nickname"] for m in target.members)
+                base = f"已从 {pot_id} 离开，当前成员：{members_str}"
+                return base + (f"，新发起人是 {target.creator['nickname']}" if transferred else "")
             else:
                 # 删除其他人
                 # 只有发起人可以删除其他人
@@ -58,10 +64,15 @@ class RemoveCommand(BaseCommand):
                     return "要删除的人不在锅里"
                 
                 # 删除指定的人
+                removed_name = next(
+                    (m["nickname"] for m in target.members if m["user_id"] == remove_id),
+                    str(remove_id),
+                )
                 target.members = [m for m in target.members if m["user_id"] != remove_id]
                 session.add(target)
                 session.commit()
-                
-                return f"已将 {remove_id} 从 {pot_id} 中删除"
+
+                members_str = "、".join(m["nickname"] for m in target.members)
+                return f"已将 {removed_name} 从 {pot_id} 中移除，当前成员：{members_str}"
 
 CommandRegistry.register(RemoveCommand)

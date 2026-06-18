@@ -58,8 +58,9 @@ class NewPotCommand(BaseCommand):
             session.commit()
             session.refresh(pot)
 
+        members_str = "、".join(m["nickname"] for m in members)
         extra = f"，已自动加入 {len(at_ids)} 人" if at_ids else ""
-        return f"创建成功 ID:{pot.id}{extra}"
+        return f"创建成功 ID:{pot.id}，成员：{members_str}{extra}"
 
 
 CommandRegistry.register(NewPotCommand)
